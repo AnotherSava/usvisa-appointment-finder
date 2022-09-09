@@ -53,6 +53,11 @@ def check_appointments(driver):
 
     driver.get(APPOINTMENTS_URL)
 
+    # Clicking the Continue button in case of rescheduling multiple people to include all
+    continue_button = driver.find_element(By.CLASS_NAME, 'primary')
+    if continue_button and continue_button.get_property('value') == 'Continue':
+        continue_button.click()
+
     facility_select = Select(driver.find_element(By.ID, 'appointments_consulate_appointment_facility_id'))
     facility_select.select_by_visible_text(facility_name)
     time.sleep(1)
@@ -101,10 +106,10 @@ def main():
         print(f'Starting a new check at {current_time}.')
         try:
             check_appointments(driver)
-            time.sleep(seconds_between_checks)
-
-        except ElementNotInteractableException as err:
+        except Exception as err:
             print(f'Exception: {err}')
+
+        time.sleep(seconds_between_checks)
 
 
 if __name__ == "__main__":
