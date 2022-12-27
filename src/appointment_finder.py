@@ -2,14 +2,15 @@ import datetime
 import time
 
 from selenium import webdriver
-from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 from creds import username, password, facility_name, latest_notification_date, seconds_between_checks
 from telegram import send_message, send_photo
-from urls import SIGN_IN_URL, SCHEDULE_URL, APPOINTMENTS_URL
+from urls import BASE_URL, SIGN_IN_URL, SCHEDULE_URL, APPOINTMENTS_URL
 
 
 def log_in(driver):
@@ -19,7 +20,7 @@ def log_in(driver):
     print('Logging in.')
 
     # Clicking the OK button in the "You need to sign in or sign up before continuing" dialog
-    ok_button = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div/button')
+    ok_button = driver.find_element(By.XPATH, '/html/body/div[7]/div[3]/div/button')
     if ok_button:
         ok_button.click()
 
@@ -30,10 +31,10 @@ def log_in(driver):
     password_box.send_keys(password)
 
     # Clicking the checkbox
-    driver.find_element(By.XPATH, '//*[@id="new_user"]/div[3]/label/div').click()
+    driver.find_element(By.XPATH, '//*[@id="sign_in_form"]/div[3]/label/div').click()
 
     # Clicking 'Sign in'
-    driver.find_element(By.XPATH, '//*[@id="new_user"]/p[1]/input').click()
+    driver.find_element(By.XPATH, '//*[@id="sign_in_form"]/p[1]/input').click()
 
     # Waiting for the page to load.
     time.sleep(2)
@@ -77,11 +78,11 @@ def check_appointments(driver):
             if available_days:
                 month = date_picker.find_element(By.CLASS_NAME, 'ui-datepicker-month').get_attribute("textContent")
                 year = date_picker.find_element(By.CLASS_NAME, 'ui-datepicker-year').get_attribute("textContent")
-                message = f'Available days found in {month} {year}: {", ".join(available_days)}'
+                message = f'Available days found in {month} {year}: {", ".join(available_days)}. Link: {SIGN_IN_URL}'
                 print(message)
 
                 if not is_worth_notifying(year, month, available_days):
-                    print("Not worth notifying")
+                    print("Not worth notifying.")
                     return
 
                 send_message(message)
@@ -97,9 +98,8 @@ def main():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
 
-    # Initialize the chromedriver (must be installed and in PATH)
-    # Needed to implement the headless option
-    driver = webdriver.Chrome(options=chrome_options)
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
     while True:
         current_time = time.strftime('%a, %d %b %Y %H:%M:%S', time.localtime())
