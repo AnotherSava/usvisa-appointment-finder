@@ -25,7 +25,7 @@ Here's a quick example:
 ```properties
 username=name@email.com
 password=qwerty
-url_id=12345
+url_id=12345678
 country_code=ca
 facility_name=Vancouver
 latest_notification_date=2023-10-01
@@ -33,6 +33,10 @@ seconds_between_checks=180
 telegram_bot_token=12345:some_token
 telegram_chat_id=12345
 ```
+
+`url_id` needs to be grabbed from the url when you navigate to Reschedule Appointment page.
+
+Example: <https://ais.usvisa-info.com/en-ca/niv/schedule/>**12345678**/appointment
 
 ## License
 
