@@ -10,7 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from creds import username, password, facility_name, latest_notification_date, seconds_between_checks
 from telegram import send_message, send_photo
-from urls import SIGN_IN_URL, SCHEDULE_URL, APPOINTMENTS_URL
+from urls import BASE_URL, SIGN_IN_URL, SCHEDULE_URL, APPOINTMENTS_URL
 
 
 def log_in(driver):
