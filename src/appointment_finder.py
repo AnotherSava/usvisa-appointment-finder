@@ -1,7 +1,9 @@
 import datetime
+import sys
 import time
+from platform import system
 
-from selenium import webdriver
+from seleniumwire import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
@@ -55,9 +57,15 @@ def check_appointments(driver):
     driver.get(APPOINTMENTS_URL)
 
     # Clicking the Continue button in case of rescheduling multiple people to include all
-    continue_button = driver.find_element(By.CLASS_NAME, 'primary')
-    if continue_button and continue_button.get_property('value') == 'Continue':
-        continue_button.click()
+    try:
+        continue_button = driver.find_element(By.CLASS_NAME, 'primary')
+        if continue_button and continue_button.get_property('value') == 'Continue':
+            continue_button.click()
+    except (Exception,):
+        print("No Continue button found, just moving on.")
+
+    driver.save_screenshot("/Users/az/dev/appointment-finder/page.png")
+
 
     facility_select = Select(driver.find_element(By.ID, 'appointments_consulate_appointment_facility_id'))
     facility_select.select_by_visible_text(facility_name)
@@ -93,6 +101,23 @@ def check_appointments(driver):
         driver.find_element(By.CLASS_NAME, 'ui-datepicker-next').click()
         driver.find_element(By.CLASS_NAME, 'ui-datepicker-next').click()
 
+# Nginx in front of the ais.usvisa-info is configured to block Selenium
+# Setting headers to mimic "real" browser
+def fix_headers(request):
+    # delete the existing misconfigured default headers values
+    del request.headers["User-Agent"]
+    del request.headers["Sec-Ch-Ua"]
+    del request.headers["Sec-Fetch-Site"]
+    del request.headers["Accept-Encoding"]
+    # replace the deleted headers with edited values
+    request.headers[
+        "User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    request.headers["Sec-Ch-Ua"] = "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\""
+    request.headers["Sec-Fetch-Site"] = "cross-site"
+    request.headers["Accept-Encoding"] = "gzip, deflate, br, zstd"
+    # add the missing headers
+    request.headers["Accept-Language"] = "en-US,en;q=0.9"
+    request.headers["Referer"] = "https://www.google.com/"
 
 def main():
     chrome_options = Options()
@@ -100,6 +125,10 @@ def main():
 
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
+    # driver = Chrome()
+
+    # add the interceptor
+    driver.request_interceptor = fix_headers
 
     while True:
         current_time = time.strftime('%a, %d %b %Y %H:%M:%S', time.localtime())
