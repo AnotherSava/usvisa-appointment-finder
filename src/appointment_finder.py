@@ -119,7 +119,6 @@ def main():
 
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
-    # driver = Chrome()
 
     # add the interceptor
     driver.request_interceptor = fix_headers
