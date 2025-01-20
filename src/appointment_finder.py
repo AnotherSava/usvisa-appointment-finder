@@ -57,15 +57,9 @@ def check_appointments(driver):
     driver.get(APPOINTMENTS_URL)
 
     # Clicking the Continue button in case of rescheduling multiple people to include all
-    try:
-        continue_button = driver.find_element(By.CLASS_NAME, 'primary')
-        if continue_button and continue_button.get_property('value') == 'Continue':
-            continue_button.click()
-    except (Exception,):
-        print("No Continue button found, just moving on.")
-
-    driver.save_screenshot("/Users/az/dev/appointment-finder/page.png")
-
+    continue_button = driver.find_element(By.CLASS_NAME, 'primary')
+    if continue_button and continue_button.get_property('value') == 'Continue':
+        continue_button.click()
 
     facility_select = Select(driver.find_element(By.ID, 'appointments_consulate_appointment_facility_id'))
     facility_select.select_by_visible_text(facility_name)
